@@ -1,0 +1,71 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+import peakutils
+import csv
+
+def indexfinder(value, array):
+    count = 0
+    for i in array:
+        if i == value:
+            return count
+        else:
+            count += 1
+
+x = []
+y = []
+
+'''open the common directory for all graphs,
+for loop, then open each file, add to subplot'''
+
+with open('C:/Project/FTIR/25.10.2017/RHIZOME.CSV','r') as csvfile:
+    plots = csv.reader(csvfile, delimiter=',')
+    for row in plots:
+        x.append(row[0])
+        y.append(row[1])
+        
+x = np.array(x, dtype=float)
+y = np.array(y, dtype=float)
+ty = np.power(10,(2-y))
+
+index = peakutils.indexes(-ty, thres=0.4, min_dist=10)
+
+index = np.sort(index)
+num_peaks = indexfinder(max(index), index)
+
+for i in range(num_peaks):
+    t1 = index[i]
+    t2 = index[i+1]
+    if t2-t1 >= 60:
+        plt.annotate(str(x[t1]), xy=(x[t1],ty[t1]), xytext=(x[t1]+100, ty[t1]-random.randint(1,10)))
+    else:
+        plt.annotate(str(x[t1]), xy=(x[t1],ty[t1]), xytext=(x[t1]+100, ty[t1]+(random.randint(10,20)*np.power(-1,indexfinder(t1,index)))))
+
+        
+ax = plt.axes()
+#x = np.sort(x)
+#x == sorted(x)
+'''for xy in index:                                       
+    plt.annotate(str(x[xy]), xy=(x[xy],ty[xy]), xytext=(x[xy]+100, ty[xy]+(random.randint(1,7)*np.power(-1,indexfinder(xy,index)))))'''
+
+'''use numpy for peak detection'''
+
+fig_size = plt.rcParams["figure.figsize"]
+print(fig_size)
+fig_size[0] = 12
+fig_size[1] = 6
+plt.rcParams['figure.figsize'] = fig_size
+
+plt.plot(x,ty)
+plt.plot(x[index], ty[index], marker='|', ls='', ms=30)
+plt.xlabel('Wavenumer ($\mathregular{cm^{-1}}$)')
+#ax.set_xticks([3.99, 4.00])
+ax.set_xlim(ax.get_xlim()[::-1])
+plt.ylabel('%T')
+plt.ylim(60,100)
+#ax.set_yticklabels([])
+plt.title('FTIR plot of rhizome')
+plt.legend('Rhizome')
+'''annotate the peaks'''
+#plt.show()
+plt.savefig('C:/Project/FTIR/ftir_plot.png')
